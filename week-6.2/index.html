@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="su-un" placeholder="username" type="text">
+        <input type="text" id="su-pw" placeholder="password" type="password">
+        <button onclick="signup()">Sign Up</button>
+    </div>
+    <div>
+        <input type="text" id="si-un" placeholder="username" type="text">
+        <input type="text" id="si-pw" placeholder="password" type="password">
+        <button onclick="signin()">Sign In</button>
+    </div>
+    <div>
+        <input type="text" id="new-todo" placeholder="title" type="text">
+        <button onclick="handleCreate()">New Todo</button>
+    </div>
+    <div>
+        <h3>Todos: </h3>
+        <div id="user-todos"></div>
+    </div>
+    <button onclick="signout()">Sign Out</button>
+</body>
+
+<script>
+    async function signup() {
+        const data = {
+            username: document.getElementById('su-un').value,
+            password: document.getElementById('su-pw').value
+        }
+
+        var response = await fetch("http://localhost:3000/signup",
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }
+        );
+        var result = await response.json();
+        alert(result.message);
+    }
+    async function signin() {
+        const data = {
+            username: document.getElementById('si-un').value,
+            password: document.getElementById('si-pw').value
+        }
+
+        var response = await fetch("http://localhost:3000/signin",
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }
+        );
+        var result = await response.json();
+        localStorage.setItem("Authorization", result.token);
+        alert(result.message);
+        handleGet();
+    }
+    async function signout() {
+        localStorage.removeItem("Authorization");
+        document.getElementById('user-todos').innerHTML = "";
+        alert("Signed Out");
+    }
+    async function handleGet() {
+        const token = localStorage.getItem("Authorization");
+        var response = await fetch("http://localhost:3000/todos",
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': token
+                }
+            }
+        );
+        var result = await response.json();
+        const parentDiv = document.getElementById('user-todos');
+        parentDiv.innerHTML = "";
+        result.todos.forEach(todo => {
+            var div = document.createElement("div");
+            div.textContent = todo.title;
+            parentDiv.appendChild(div);
+
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = todo.done;
+            checkbox.onchange = async () => {
+                await handleDone(todo.id, checkbox.checked);
+            };
+            div.appendChild(checkbox);
+
+            var deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = async () => {
+                await handleDelete(todo.id);
+            };
+            div.appendChild(deleteBtn);
+        });
+
+    }
+
+    async function handleCreate() {
+        const title = document.getElementById('new-todo').value;
+        const token = localStorage.getItem("Authorization");
+        var response = await fetch("http://localhost:3000/todos",
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({ title: title })
+            }
+        );
+        var result = await response.json();
+        alert(result.message);
+        handleGet();
+    }
+
+    async function handleDone(id, doneStatus) {
+        const token = localStorage.getItem('Authorization');
+        var response = await fetch(`http://localhost:3000/todos/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ done: doneStatus })
+        });
+        var result = await response.json();
+        alert(result.message);
+        handleGet();
+    }
+
+    async function handleDelete(id) {
+        const token = localStorage.getItem('Authorization');
+        var response = await fetch(`http://localhost:3000/todos/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': token
+            }
+        });
+        var result = await response.json();
+        alert(result.message);
+        handleGet();
+    }
+
+
+</script>
+
+</html>
