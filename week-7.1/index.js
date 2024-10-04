@@ -9,7 +9,7 @@ const {UserModel, TodoModel} = require('./db.js');
 const { signupTypeCheck, loginTypeCheck, todoCreateTypeCheck, todoUpdateTypeCheck } = require('./types.js');
 
 //remove before pushing to github
-mongoose.connect("mongodb+srv://raghavdutta28:Asdf$$22aa@learning.qz669.mongodb.net/todoApp");
+mongoose.connect("");
 
 const JWTSECRET = "ILOVEMOMO";
 
