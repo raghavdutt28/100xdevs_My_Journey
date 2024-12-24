@@ -1,6 +1,2 @@
-week-5/node_modules
-week-6.1/node_modules
-week-6.2/node_modules
-week-7.1/node_modules
-week-8/node_modules
-week-8/.env
+*/node_modules
+*/.env
